@@ -129,58 +129,103 @@ def mark_hw_done_today(data):
     data["streak"]["last_active_date"] = today_str
 
 
-# ─── SIDEBAR ─────────────────────────────────────────────
+# ─── ABOUT PROJECT DIALOG ─────────────────────────────────────
+@st.dialog("ℹ️ Про Study Planner")
+def about_project_dialog():
+    st.markdown("<br>", unsafe_allow_html=True)
 
-# Заголовок Study Planner з більшим шрифтом
+    st.subheader("🎯 Мета програми")
+    st.markdown(
+        "<div style='background-color:#E8F5E9; padding:20px; border-radius:10px; font-size:16px; color:black; margin-bottom:15px;'>"
+        "📌 Головна мета Study Planner — допомогти учням ефективно організовувати навчальний процес, "
+        "стежити за завданнями та прогресом, не перевантажуючи себе зайвою інформацією."
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    st.subheader("✨ Фішки застосунку")
+    st.markdown(
+        "<div style='background-color:#F3E5F5; padding:20px; border-radius:10px; font-size:16px; color:black; margin-bottom:15px;'>"
+        "🌟 Просте відмічання виконаних завдань<br>"
+        "🌟 Візуальна серія днів виконання<br>"
+        "🌟 Лаконічна навігація по плану, аналітиці та канікулах<br>"
+        "🌟 Легкий перегляд прогресу та цілей"
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    st.subheader("🚀 Що класного в Study Planner")
+    st.markdown(
+        "<div style='background-color:#FFF3E0; padding:20px; border-radius:10px; font-size:16px; color:black; margin-bottom:15px;'>"
+        "✨ Можливість швидко перевіряти виконані завдання<br>"
+        "✨ Легка інтеграція власних цілей та нотаток<br>"
+        "✨ Гарний простий дизайн, який не перевантажує очі<br>"
+        "✨ Можна планувати свій день та бачити прогрес в реальному часі<br>"
+        "✨ Надихає на регулярність та дисципліну, без стресу"
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("✅ Закрити", use_container_width=True, type="primary"):
+        st.rerun()
+
+
+# ─── SIDEBAR ─────────────────────────────────────────────
 st.sidebar.markdown(
     "<div style='margin-top:20px; font-weight:bold; font-size:24px;'>📚 Study Planner</div>",
     unsafe_allow_html=True
 )
 
-# Лінія під заголовком
 st.sidebar.markdown(
     "<hr style='margin-top:30px;margin-bottom:25px;'>",
     unsafe_allow_html=True
 )
 
-# Опускаємо Навігацію нижче та робимо текст більшим
 st.sidebar.markdown(
     "<div style='margin-top:20px; font-weight:600; font-size:21px;'>🧭 Навігація</div>",
     unsafe_allow_html=True
 )
 
-# CSS для відстані між пунктами навігації
-st.sidebar.markdown("""
-<style>
+st.sidebar.markdown("""<style>
 section[data-testid="stSidebar"] div[role="radiogroup"] label {
-    margin-bottom: 21px !important;   /* відстань між пунктами */
+    margin-bottom: 21px !important;
 }
-</style>
-""", unsafe_allow_html=True)
+</style>""", unsafe_allow_html=True)
 
 page = st.sidebar.radio(
     "",
-    ["📅 План", "📊 Аналітика", "🏖️ Канікули", "ℹ️ Про проєкт"]
+    ["🏠 Головна", "📅 План", "📊 Аналітика", "🏖️ Канікули"]
 )
 
-# Лінія під навігацією
 st.sidebar.markdown(
     "<hr style='margin-top:15px;margin-bottom:10px;'>",
     unsafe_allow_html=True
 )
 
-# Відступ перед серією
 st.sidebar.markdown(
     "<div style='margin-top:15px;'></div>",
     unsafe_allow_html=True
 )
 
-# Серія (залишаємо внизу)
 st.sidebar.metric("🔥 Серія", f"{data['streak']['count']} дн.")
+
+# ─── КНОПКА ПРО ПРОЄКТ ВНИЗУ ─────────────────────────────
+# Додаємо вертикальний простір перед кнопкою в сайдбарі
+st.sidebar.markdown("<div style='height:500px;'></div>", unsafe_allow_html=True)
+
+
+if st.sidebar.button("❓ Про проєкт", use_container_width=True, type="secondary"):
+    about_project_dialog()
 
 # ════════════════════════════════════════════════════════════
 # 📅 ПЛАН
 # ════════════════════════════════════════════════════════════
+
+if page == "🏠 Головна":
+    st.title("Ласкаво просимо на головну!")
+    st.write("Тут можна додати опис програми, її мету та інші цікаві фішки.")
+
 if page == "📅 План":
 
     st.title("📅 Навчальний план")
