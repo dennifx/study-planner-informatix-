@@ -219,13 +219,37 @@ if st.sidebar.button("❓ Про проєкт", use_container_width=True, type="
 # ════════════════════════════════════════════════════════════
 if page == "🏠 Головна":
 
-    today = date.today()
-    user_name = "Ім'я"  # можеш зробити динамічним
+    from datetime import date
 
-    # ─── ПРИВІТАННЯ ─────────────────────────────
+    # Мапа місяців у родовому відмінку
+    months_genitive = {
+        1: "січня",
+        2: "лютого",
+        3: "березня",
+        4: "квітня",
+        5: "травня",
+        6: "червня",
+        7: "липня",
+        8: "серпня",
+        9: "вересня",
+        10: "жовтня",
+        11: "листопада",
+        12: "грудня"
+    }
+
+    today = date.today()
+    user_name = "Ім'я"
+
+    # день тижня українською
+    days_ukr = ["понеділок", "вівторок", "середа", "четвер", "п’ятниця", "субота", "неділя"]
+    day_name = days_ukr[today.weekday()]
+    day_num = today.day
+    month_name = months_genitive[today.month]
+    year = today.year
+
     st.markdown(
         f"<h1 style='color:#FFFFFF;'>Привіт, {user_name}! 👋</h1>"
-        f"<p style='color:#BBBBBB; font-size:16px;'>Сьогодні: {today.strftime('%A, %d %B %Y')}</p>",
+        f"<p style='color:#BBBBBB; font-size:16px;'>Сьогодні: {day_name}, {day_num} {month_name} {year}</p>",
         unsafe_allow_html=True
     )
 
@@ -246,29 +270,23 @@ if page == "🏠 Головна":
     with col_left:
 
         # ─── Прогрес за тиждень ─────────────────────
-        st.subheader("📈 Прогрес за тиждень")
+        st.subheader("📈 День тижня")
 
-        # День тижня з понеділка (0 = Пн, 6 = Нд)
-        weekdays_order = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        weekdays_order = ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Нд"]
 
-        # Підсвічування виконаних днів (якщо використовується data["streak"])
-        done_dates_set = set(data["streak"].get("done_dates", []))
-
-        # Формуємо список для поточного тижня
-        today_weekday = today.weekday()  # 0 = Пн, 6 = Нд
-        week_start = today - timedelta(days=today_weekday)  # Понеділок цього тижня
+        today_weekday = today.weekday()
+        week_start = today - timedelta(days=today_weekday)
         week_days = [week_start + timedelta(days=i) for i in range(7)]
 
         cols = st.columns(7)
         for i, d in enumerate(week_days):
             day_short = weekdays_order[i]
-            # якщо день сьогодні, зелений; якщо виконаний раніше, темно-зелений; якщо ні — темно-сірий
+
+            # Якщо це сьогоднішній день — зелений, всі інші — темно-сірі
             if d == today:
-                color = "#3AA76D"  # зелений
-            elif str(d) in done_dates_set:
-                color = "#2E8B57"  # темно-зелений
+                color = "#3AA76D"  # зелений для сьогодні
             else:
-                color = "#2A2F3A"  # темно-сірий
+                color = "#2A2F3A"  # темно-сірий для всіх інших
 
             cols[i].markdown(
                 f"<div style='background:{color}; padding:10px; border-radius:8px; text-align:center; color:#FFF;'>"
@@ -424,32 +442,47 @@ if page == "🏠 Головна":
 
 if page == "📅 План":
 
-    st.title("📅 Навчальний план")
-    st.markdown("---")
+    st.markdown("<h1 style='color:#FFFFFF;'>📅 Навчальний план</h1>", unsafe_allow_html=True)
+    st.markdown("<hr style='border:1px solid #2A2F3A; margin-top:10px; margin-bottom:25px'>", unsafe_allow_html=True)
 
-    # ─── ДОБАВЛЕНИЕ ─────────────────────────────
+    # ─── ДВОКОЛОНКОВИЙ МАКЕТ ─────────────────────────────
+    col_left, col_right = st.columns([1, 2], gap="large")
 
-    with st.container():
-        st.subheader("➕ Додати")
+    # ═════════ ЛІВА КОЛОНКА ─════════════════════════════════
+    with col_left:
+        st.markdown("<div style='height:30px'></div>", unsafe_allow_html=True)  # відступ зверху
+        st.markdown("""
+            <div style='
+                background-color:#2A2F3A;  /* темно-сірий для чорної теми */
+                padding:20px;
+                border-radius:12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+                margin-bottom:20px;
+            '>
+                <h3 style='color:#FFFFFF; margin-top:0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>
+                    ➕ Додати нове завдання / ціль
+                </h3>
+        """, unsafe_allow_html=True)
 
-        col_add1, col_add2 = st.columns(2)
+        # ─── Тип завдання ─────────────────
+        task_type = st.selectbox("Тип", ["Домашнє завдання", "Навчальна ціль"])
 
-        with col_add1:
-            task_type = st.selectbox("Тип", ["Домашнє завдання", "Навчальна ціль"])
-            title = st.text_input("Назва")
+        # ─── Предмет (тільки для домашнього завдання) ─────────
+        subject = ""
+        if task_type == "Домашнє завдання":
+            subject = st.text_input("Предмет")
 
-        with col_add2:
-            deadline = st.date_input("Дедлайн", min_value=date.today())
+        # ─── Назва завдання / цілі ─────────
+        title = st.text_input("Завдання")
 
-            if task_type == "Домашнє завдання":
-                subject = st.text_input("Предмет")
+        # ─── Дедлайн ─────────
+        deadline = st.date_input("Дедлайн", min_value=date.today())
 
+        # ─── Кнопка додати ─────────
         if st.button("Додати", use_container_width=True, type="primary"):
-
             if title.strip() == "":
                 st.error("Введи назву")
             else:
-
                 if task_type == "Домашнє завдання":
                     data["homework"].append({
                         "id": str(len(data["homework"])),
@@ -465,169 +498,139 @@ if page == "📅 План":
                         "date": str(deadline),
                         "done": False
                     })
-
                 save_data(data)
                 st.success("Додано ✅")
                 st.rerun()
 
-    st.markdown("---")
+        st.markdown("</div>", unsafe_allow_html=True)  # закриваємо блок
 
-    # ─── СОРТИРОВКА ─────────────────────────────
+    # ═════════ ПРАВА КОЛОНКА ─══════════════════════════════
+    with col_right:
+        st.markdown("<div style='height:30px'></div>", unsafe_allow_html=True)  # відступ зверху
+        st.markdown("""
+            <div style='
+                background-color:#2A2F3A;  /* темно-сірий для чорної теми */
+                padding:20px;
+                border-radius:12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+                margin-bottom:20px;
+            '>
+                <h3 style='color:#FFFFFF; margin-top:0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;'>
+                    📌 Активні завдання та цілі
+                </h3>
+        """, unsafe_allow_html=True)
 
-    data["homework"] = sorted(data["homework"], key=lambda x: x["date"])
-    data["goals"] = sorted(data["goals"], key=lambda x: x["date"])
 
-    # ─── ФУНКЦИЯ ВИЗУАЛА ─────────────────────────────
+        def render_task(task, task_type):
+            task_date = date.fromisoformat(task["date"])
+            days_left = (task_date - date.today()).days
 
-    def render_task(task, task_type):
-
-        task_date = date.fromisoformat(task["date"])
-        days_left = (task_date - date.today()).days
-
-        if days_left < 0:
-            color = "#ff4b4b"   # просрочено
-        elif days_left <= 2:
-            color = "#ffa600"   # срочно
-        else:
-            color = "#2ecc71"   # нормально
-
-        col1, col2 = st.columns([6, 1])
-
-        with col1:
-            if task_type == "homework":
-                text = f"**{task['subject']}** — {task['title']}  \n📅 до {task['date']}"
+            if days_left < 0:
+                color = "#ff4b4b"
+                badge = "Просрочено"
+            elif days_left <= 2:
+                color = "#ffa600"
+                badge = "Терміново"
             else:
-                text = f"**{task['title']}**  \n📅 до {task['date']}"
+                color = "#2ecc71"
+                badge = f"Залишилось {days_left} дн."
 
-            st.markdown(
-                f"<div style='background-color:{color}20; padding:10px; border-radius:10px; margin-bottom:8px;'>"
-                f"{text}"
-                f"</div>",
-                unsafe_allow_html=True
-            )
+            col1, col2 = st.columns([6, 1])
+            with col1:
+                text = f"<b>{task.get('subject', '')}</b> — {task['title']}" if task_type == "homework" else task[
+                    'title']
+                st.markdown(
+                    f"""
+                    <div style='background-color:{color}20; padding:12px; border-radius:12px; margin-bottom:8px;'>
+                        <div style='display:flex; justify-content:space-between; align-items:center;'>
+                            <span style='color:#FFFFFF;'>{text}</span>
+                            <span style='background-color:{color}; color:#000; padding:2px 8px; border-radius:8px; font-size:12px;'>{badge}</span>
+                        </div>
+                        <div style='font-size:12px; color:#BBBBBB;'>📅 Дедлайн: {task_date}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            with col2:
+                if st.button("🗑️", key=f"del_{task_type}_{task['id']}"):
+                    if task_type == "homework":
+                        data["homework"] = [t for t in data["homework"] if t["id"] != task["id"]]
+                    else:
+                        data["goals"] = [t for t in data["goals"] if t["id"] != task["id"]]
+                    save_data(data)
+                    st.rerun()
 
-        with col2:
-            if st.button("🗑️", key=f"del_{task_type}_{task['id']}"):
-                if task_type == "homework":
-                    data["homework"] = [t for t in data["homework"] if t["id"] != task["id"]]
-                else:
-                    data["goals"] = [t for t in data["goals"] if t["id"] != task["id"]]
 
-                save_data(data)
-                st.rerun()
-
-    # ─── АКТИВНЫЕ ─────────────────────────────
-
-    st.subheader("📌 Активні")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
+        # ─── Активні домашні завдання
         st.markdown("### 📘 Домашні завдання")
-
         active_hw = [hw for hw in data["homework"] if not hw.get("done", False)]
-
         if not active_hw:
             st.info("Немає активних завдань")
-
         for hw in active_hw:
-            checked = st.checkbox(
-                "Виконано",
-                key=f"hw_done_{hw['id']}"
-            )
-
+            checked = st.checkbox("Виконано", key=f"hw_done_{hw['id']}")
             render_task(hw, "homework")
-
             if checked:
                 hw["done"] = True
                 update_streak(data)
                 save_data(data)
                 st.rerun()
 
-    with col2:
+        # ─── Активні навчальні цілі
         st.markdown("### 🎯 Навчальні цілі")
-
         active_goals = [g for g in data["goals"] if not g.get("done", False)]
-
         if not active_goals:
             st.info("Немає активних цілей")
-
         for goal in active_goals:
-            checked = st.checkbox(
-                "Виконано",
-                key=f"goal_done_{goal['id']}"
-            )
-
+            checked = st.checkbox("Виконано", key=f"goal_done_{goal['id']}")
             render_task(goal, "goal")
-
             if checked:
                 goal["done"] = True
                 save_data(data)
                 st.rerun()
 
-    st.markdown("---")
+        st.markdown("</div>", unsafe_allow_html=True)  # закриваємо картку
 
-    # ─── ВИКОНАНІ ─────────────────────────────
-    with st.expander("✅ Виконані"):
+        # ─── Виконані завдання та цілі у вкладці
+        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)  # невеликий відступ
 
-        col1, col2 = st.columns(2)
+        with st.expander("✅ Виконані завдання та цілі", expanded=False):
 
-        # ─── ДОМАШНІ ─────────────────
-        with col1:
+            # ─── Домашні завдання
             st.markdown("### 📘 Домашні завдання")
-
             done_hw = [hw for hw in data["homework"] if hw.get("done", False)]
-
             if not done_hw:
                 st.write("Немає виконаних")
-
             for hw in done_hw:
-
                 col_a, col_b = st.columns([5, 1])
-
                 with col_a:
                     st.markdown(f"~~{hw['subject']} — {hw['title']}~~")
-
                 with col_b:
                     if st.button("🗑️", key=f"del_done_hw_{hw['id']}"):
-                        data["homework"] = [
-                            x for x in data["homework"] if x["id"] != hw["id"]
-                        ]
+                        data["homework"] = [x for x in data["homework"] if x["id"] != hw["id"]]
                         save_data(data)
                         st.rerun()
 
-        # ─── ЦІЛІ ─────────────────
-        with col2:
+            # ─── Навчальні цілі
             st.markdown("### 🎯 Навчальні цілі")
-
             done_goals = [g for g in data["goals"] if g.get("done", False)]
-
             if not done_goals:
                 st.write("Немає виконаних")
-
             for goal in done_goals:
-
                 col_a, col_b = st.columns([5, 1])
-
                 with col_a:
                     st.markdown(f"~~{goal['title']}~~")
-
                 with col_b:
                     if st.button("🗑️", key=f"del_done_goal_{goal['id']}"):
-                        data["goals"] = [
-                            x for x in data["goals"] if x["id"] != goal["id"]
-                        ]
+                        data["goals"] = [x for x in data["goals"] if x["id"] != goal["id"]]
                         save_data(data)
                         st.rerun()
 
-        st.markdown("---")
-
-        # ─── КНОПКА ОЧИСТИТИ ВСІ ─────────────────
-        if st.button("🧹 Очистити всі виконані", use_container_width=True):
-            data["homework"] = [hw for hw in data["homework"] if not hw.get("done", False)]
-            data["goals"] = [g for g in data["goals"] if not g.get("done", False)]
-            save_data(data)
-            st.rerun()
+            # ─── Кнопка очистити всі виконані
+            if st.button("🧹 Очистити всі виконані", use_container_width=True):
+                data["homework"] = [hw for hw in data["homework"] if not hw.get("done", False)]
+                data["goals"] = [g for g in data["goals"] if not g.get("done", False)]
+                save_data(data)
+                st.rerun()
 
 # ════════════════════════════════════════════════════════════
 # 📊 АНАЛІТИКА
@@ -853,17 +856,3 @@ elif page == "🏖️ Канікули":
         "Під час канікул серія 🔥 не переривається. "
         "Система автоматично не враховує ці дні як навчальні."
     )
-
-# ════════════════════════════════════════════════════════════
-# ℹ️ ПРО ПРОЄКТ
-# ════════════════════════════════════════════════════════════
-elif page == "ℹ️ Про проєкт":
-
-    st.title("ℹ️ Про Study Planner")
-    st.markdown("""
-    Study Planner допомагає:
-    - Додавати завдання
-    - Ставити цілі
-    - Відстежувати серію виконання
-    - Аналізувати прогрес
-    """)
