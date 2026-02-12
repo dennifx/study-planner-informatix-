@@ -638,7 +638,7 @@ if page == "📅 План":
 elif page == "📊 Аналітика":
 
     st.title("📊 Аналітика")
-    st.markdown("<div style='height:25px'></div>", unsafe_allow_html=True)  # відступ після заголовка
+    st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
     # ─── ВИЗНАЧЕННЯ ДАНИХ ─────────────────────────────
     total_hw = len(data["homework"])
@@ -652,11 +652,17 @@ elif page == "📊 Аналітика":
     completion_rate = round((total_completed / total_tasks) * 100, 1) if total_tasks > 0 else 0
 
     # ─── МЕТРИКИ ─────────────────────────────
-    st.markdown("<div style='height:15px'></div>", unsafe_allow_html=True)  # додатковий відступ перед картками
-    col1, col2, col3, col4 = st.columns(4, gap="large")  # великий gap між метриками
+    col1, col2, col3, col4 = st.columns(4, gap="large")
 
     metric_style = """
-    <div style='background-color:#1C1F26; padding:20px; border-radius:12px; text-align:center; border:1px solid #2A2F3A;'>
+    <div style='
+        background-color:#1C1F26; 
+        padding:18px; 
+        border-radius:12px; 
+        text-align:center; 
+        border:1px solid #2A2F3A; 
+        box-shadow:0 4px 12px rgba(0,0,0,0.5);
+    '>
         <h2 style='color:#FFFFFF; margin:0'>{value}</h2>
         <p style='color:#BBBBBB; margin:0'>{label}</p>
     </div>
@@ -671,10 +677,9 @@ elif page == "📊 Аналітика":
     with col4:
         st.markdown(metric_style.format(value=f"{data['streak']['count']} дн.", label="Серія 🔥"), unsafe_allow_html=True)
 
-    # ─── ГОРИЗОНТАЛЬНА ЛІНІЯ ПІД МЕТРИКАМИ ─────────────
-    st.markdown("<hr style='border:1px solid #2A2F3A; margin-top:20px; margin-bottom:25px'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border:1px solid #2A2F3A; margin-top:25px; margin-bottom:25px'>", unsafe_allow_html=True)
 
-    # ─── РОЗПОДІЛ ВИКОНАНИХ / НЕ ВИКОНАНИХ ─────────────────────────────
+    # ─── РОЗПОДІЛ ВИКОНАНИХ / НЕ ВИКОНАНИХ ─────────────
     st.subheader("Розподіл виконання задач")
     status_data = {
         "Статус": ["Виконано", "Не виконано"],
@@ -756,7 +761,25 @@ elif page == "📊 Аналітика":
         yaxis=dict(showticklabels=False, showgrid=False)
     )
     st.plotly_chart(fig_activity, use_container_width=True)
-    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:25px'></div>", unsafe_allow_html=True)
+
+    # ─── ВАЖЛИВА ІНФОРМАЦІЯ ВНИЗУ ─────────────
+    st.markdown("""
+        <div style='
+            background: linear-gradient(135deg, #2C3E50, #34495E);  /* приглушений градієнт */
+            color:#FFFFFF;
+            padding:18px;
+            border-radius:12px;
+            font-weight:bold;
+            text-align:center;
+            box-shadow:0 4px 12px rgba(0,0,0,0.5);
+            margin-top:25px;
+            font-size:16px;
+        '>
+            Під час канікул 🔥 серія не переривається. 
+            Система автоматично не враховує ці дні як навчальні.
+        </div>
+    """, unsafe_allow_html=True)
 
 
 # ════════════════════════════════════════════════════════════
