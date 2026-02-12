@@ -760,99 +760,124 @@ elif page == "📊 Аналітика":
 
 
 # ════════════════════════════════════════════════════════════
-# 🏖️ КАНІКУЛИ (мінімально)
+# 🏖️ КАНІКУЛИ (темна тема)
 # ════════════════════════════════════════════════════════════
 elif page == "🏖️ Канікули":
 
-    st.title("🏖️ Канікули та перерви")
-    st.markdown("---")
+    st.markdown("<h1 style='color:#FFFFFF;'>🏖️ Канікули та перерви</h1>", unsafe_allow_html=True)
+    st.markdown("<hr style='border:1px solid #2A2F3A; margin-top:10px; margin-bottom:25px'>", unsafe_allow_html=True)
 
-    st.subheader("➕ Додати період канікул")
+    # ─── ДВОКОЛОНКОВИЙ МАКЕТ ─────────────────────────────
+    col_left, col_right = st.columns([1, 2], gap="large")
 
-    col1, col2 = st.columns(2)
+    # ═════════ ЛІВА КОЛОНКА ─════════════════════════════════
+    with col_left:
+        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)  # відступ зверху
+        st.markdown("""
+            <div style='
+                background-color:#2A2F3A;  /* темно-сірий для чорної теми */
+                padding:20px;
+                border-radius:12px;
+                box-shadow:0 4px 12px rgba(0,0,0,0.5);
+                margin-bottom:20px;
+            '>
+                <h3 style='color:#FFFFFF; margin-top:0;'>
+                    ➕ Додати період канікул
+                </h3>
+        """, unsafe_allow_html=True)
 
-    with col1:
+        # ─── Форма додавання
         vac_name = st.text_input("Назва періоду (наприклад: Зимові канікули)")
         vac_start = st.date_input("Початок", key="vac_start")
-
-    with col2:
         vac_end = st.date_input("Кінець", key="vac_end")
 
-    if st.button("Додати період", use_container_width=True, type="primary"):
-
-        if vac_name.strip() == "":
-            st.error("Введи назву періоду")
-        elif vac_end < vac_start:
-            st.error("Дата завершення не може бути раніше початку")
-        else:
-            data["vacations"].append({
-                "name": vac_name,
-                "start": str(vac_start),
-                "end": str(vac_end)
-            })
-
-            save_data(data)
-            st.success("Період додано ✅")
-            st.rerun()
-
-    st.markdown("---")
-
-    st.subheader("📋 Заплановані перерви")
-
-    if not data["vacations"]:
-        st.info("Поки що немає доданих канікул")
-
-    for v in data["vacations"]:
-
-        start = date.fromisoformat(v["start"])
-        end = date.fromisoformat(v["end"])
-        duration = (end - start).days + 1
-
-        col_a, col_b = st.columns([6, 1])
-
-        with col_a:
-            st.markdown(
-                f"""
-                <div style='background-color:#E3F2FD; padding:12px; border-radius:10px; margin-bottom:10px;'>
-                <b>{v['name']}</b><br>
-                📅 {v['start']} → {v['end']}<br>
-                ⏳ {duration} днів
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-        with col_b:
-            if st.button("🗑️", key=f"del_vac_{v['name']}"):
-                data["vacations"] = [x for x in data["vacations"] if x != v]
+        if st.button("Додати період", use_container_width=True, type="primary"):
+            if vac_name.strip() == "":
+                st.error("Введи назву періоду")
+            elif vac_end < vac_start:
+                st.error("Дата завершення не може бути раніше початку")
+            else:
+                data["vacations"].append({
+                    "name": vac_name,
+                    "start": str(vac_start),
+                    "end": str(vac_end)
+                })
                 save_data(data)
+                st.success("Період додано ✅")
                 st.rerun()
 
-    st.markdown("---")
+        st.markdown("</div>", unsafe_allow_html=True)  # закриваємо картку
 
-    # ─── СТАТИСТИКА ПО КАНІКУЛАХ ─────────────────────────────
+    # ═════════ ПРАВА КОЛОНКА ─══════════════════════════════
+    with col_right:
+        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+        st.markdown("""
+            <div style='
+                background-color:#2A2F3A;
+                padding:20px;
+                border-radius:12px;
+                box-shadow:0 4px 12px rgba(0,0,0,0.5);
+                margin-bottom:20px;
+            '>
+                <h3 style='color:#FFFFFF; margin-top:0;'>
+                    📋 Канікули
+                </h3>
+        """, unsafe_allow_html=True)
 
-    st.subheader("📊 Статистика")
+        if not data["vacations"]:
+            st.info("Поки що немає доданих канікул")
 
-    total_vacations = len(data["vacations"])
+        for v in data["vacations"]:
+            start = date.fromisoformat(v["start"])
+            end = date.fromisoformat(v["end"])
+            duration = (end - start).days + 1
 
-    total_days = 0
-    for v in data["vacations"]:
-        start = date.fromisoformat(v["start"])
-        end = date.fromisoformat(v["end"])
-        total_days += (end - start).days + 1
+            col_a, col_b = st.columns([6, 1])
 
-    col_s1, col_s2 = st.columns(2)
+            with col_a:
+                st.markdown(
+                    f"""
+                    <div style='background-color:#424750; padding:12px; border-radius:10px; margin-bottom:10px;'>
+                        <b style='color:#FFFFFF'>{v['name']}</b><br>
+                        📅 <span style='color:#BBBBBB'>{v['start']} → {v['end']}</span><br>
+                        ⏳ <span style='color:#BBBBBB'>{duration} днів</span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            with col_b:
+                if st.button("🗑️", key=f"del_vac_{v['name']}"):
+                    data["vacations"] = [x for x in data["vacations"] if x != v]
+                    save_data(data)
+                    st.rerun()
 
-    with col_s1:
-        st.metric("🏖️ Кількість періодів", total_vacations)
+        st.markdown("</div>", unsafe_allow_html=True)  # закриваємо картку
 
-    with col_s2:
-        st.metric("📅 Всього днів канікул", total_days)
+        # ─── СТАТИСТИКА ПО КАНІКУЛАХ ─────────────────────────────
+        total_vacations = len(data["vacations"])
+        total_days = sum((date.fromisoformat(v["end"]) - date.fromisoformat(v["start"])).days + 1 for v in data["vacations"])
 
-    st.markdown("---")
+        col_s1, col_s2 = st.columns(2)
+        with col_s1:
+            st.metric("🏖️ Кількість періодів", total_vacations)
+        with col_s2:
+            st.metric("📅 Всього днів канікул", total_days)
 
-    st.info(
-        "Під час канікул серія 🔥 не переривається. "
-        "Система автоматично не враховує ці дні як навчальні."
-    )
+        # ─── ВАЖЛИВА ІНФОРМАЦІЯ ВНИЗУ (приглушений градієнт) ───────────────
+        st.markdown("<div style='height:32px'></div>", unsafe_allow_html=True)  # відступ зверху
+        st.markdown("""
+            <div style='
+                background: linear-gradient(135deg, #2C3E50, #34495E);  /* темно-синьо-сірий градієнт */
+                color:#FFFFFF;
+                padding:18px;
+                border-radius:12px;
+                font-weight:bold;
+                text-align:center;
+                box-shadow:0 4px 12px rgba(0,0,0,0.5);
+                margin-top:25px;
+                font-size:16px;
+            '>
+                Під час канікул 🔥 серія не переривається. 
+                Система автоматично не враховує ці дні як навчальні!
+            </div>
+        """, unsafe_allow_html=True)
