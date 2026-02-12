@@ -1,4 +1,13 @@
 {
     "homework": [],
-    "goals": []
+    "goals": [],
+    "streak": {
+        "count": 1,
+        "last_active_date": "2026-02-12",
+        "done_dates": [
+            "2026-02-12"
+        ]
+    },
+    "vacations": [],
+    "notes": ""
 }
