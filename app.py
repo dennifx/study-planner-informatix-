@@ -22,6 +22,12 @@ import os
 from datetime import date, timedelta
 import plotly.express as px
 
+import streamlit as st
+import json
+import os
+from datetime import date, timedelta
+import plotly.express as px
+
 st.set_page_config(
     page_title="Study Planner",
     page_icon="📚",
@@ -30,6 +36,38 @@ st.set_page_config(
 
 DATA_FILE = "data.json"
 
+
+# ─── LOAD / SAVE ─────────────────────────────────────────────
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return {
+            "homework": [],
+            "goals": [],
+            "streak": {
+                "count": 0,
+                "last_active_date": None,
+                "done_dates": []
+            },
+            "vacations": []
+        }
+
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    if "streak" not in data:
+        data["streak"] = {"count": 0, "last_active_date": None, "done_dates": []}
+    if "vacations" not in data:
+        data["vacations"] = []
+
+    return data
+
+
+def save_data(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+data = load_data()
 
 # ─── LOAD / SAVE ─────────────────────────────────────────────
 def load_data():
@@ -240,6 +278,7 @@ if page == "🏠 Головна":
     today = date.today()
     user_name = "Ім'я"
 
+
     # день тижня українською
     days_ukr = ["понеділок", "вівторок", "середа", "четвер", "п’ятниця", "субота", "неділя"]
     day_name = days_ukr[today.weekday()]
@@ -254,10 +293,15 @@ if page == "🏠 Головна":
     )
 
     # горизонтальна лінія
-    st.markdown(
-        "<hr style='border:1px solid #2A2F3A; margin-top:10px; margin-bottom:25px'>",
-        unsafe_allow_html=True
-    )
+    st.markdown("""
+    <hr style="
+        border: none;
+        height: 1px;
+        background: linear-gradient(to right, transparent, #2A2F3A, transparent);
+        margin-top: 10px;
+        margin-bottom: 30px;
+    ">
+    """, unsafe_allow_html=True)
 
     # ─── ДВОКОЛОНКОВИЙ МАКЕТ ─────────────────────────────
     col_left, col_right = st.columns([2, 1], gap="large")
@@ -435,6 +479,10 @@ if page == "🏠 Головна":
         else:
             st.info("Канікули не заплановані")
 
+
+# ════════════════════════════════════════════════════════════
+# 📅 ПЛАН
+# ════════════════════════════════════════════════════════════
 
 # ════════════════════════════════════════════════════════════
 # 📅 ПЛАН
@@ -635,12 +683,24 @@ if page == "📅 План":
 # ════════════════════════════════════════════════════════════
 # 📊 АНАЛІТИКА
 # ════════════════════════════════════════════════════════════
+
 elif page == "📊 Аналітика":
 
-    st.title("📊 Аналітика")
-    st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#FFFFFF;'>📊 Аналітика</h1>", unsafe_allow_html=True)
 
-    # ─── ВИЗНАЧЕННЯ ДАНИХ ─────────────────────────────
+    st.markdown("""
+        <hr style="
+            border: none;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #2A2F3A, transparent);
+            margin-top: 10px;
+            margin-bottom: 30px;
+        ">
+        """, unsafe_allow_html=True)
+
+    # ─────────────────────────────────────────────
+    # ПІДГОТОВКА ДАНИХ
+    # ─────────────────────────────────────────────
     total_hw = len(data["homework"])
     total_goals = len(data["goals"])
     total_tasks = total_hw + total_goals
@@ -651,36 +711,67 @@ elif page == "📊 Аналітика":
 
     completion_rate = round((total_completed / total_tasks) * 100, 1) if total_tasks > 0 else 0
 
-    # ─── МЕТРИКИ ─────────────────────────────
-    col1, col2, col3, col4 = st.columns(4, gap="large")
+    # ─────────────────────────────────────────────
+    # KPI + МЕТРИКИ (2 КОЛОНКИ)
+    # ─────────────────────────────────────────────
+    col_left, col_right = st.columns(2, gap="large")
 
-    metric_style = """
-    <div style='
-        background-color:#1C1F26; 
-        padding:18px; 
-        border-radius:12px; 
-        text-align:center; 
-        border:1px solid #2A2F3A; 
-        box-shadow:0 4px 12px rgba(0,0,0,0.5);
-    '>
-        <h2 style='color:#FFFFFF; margin:0'>{value}</h2>
-        <p style='color:#BBBBBB; margin:0'>{label}</p>
-    </div>
-    """
+    # ─── ЛІВА КОЛОНКА — ЗАГАЛЬНИЙ ПРОГРЕС
+    with col_left:
+        st.markdown(f"""
+            <div style='
+                background: linear-gradient(135deg, #1E1E2F, #25283D);
+                padding:40px;
+                border-radius:18px;
+                text-align:center;
+                border:1px solid #2A2F3A;
+                box-shadow:0 8px 25px rgba(0,0,0,0.6);
+            '>
+                <p style='color:#AAAAAA; font-size:16px; margin-bottom:10px'>
+                    Загальний прогрес
+                </p>
+                <h1 style='color:#3AA76D; font-size:56px; margin:0'>
+                    {completion_rate}%
+                </h1>
+            </div>
+        """, unsafe_allow_html=True)
 
-    with col1:
-        st.markdown(metric_style.format(value=total_tasks, label="Всього задач"), unsafe_allow_html=True)
-    with col2:
-        st.markdown(metric_style.format(value=total_completed, label="Виконано"), unsafe_allow_html=True)
-    with col3:
-        st.markdown(metric_style.format(value=f"{completion_rate}%", label="Прогрес"), unsafe_allow_html=True)
-    with col4:
-        st.markdown(metric_style.format(value=f"{data['streak']['count']} дн.", label="Серія 🔥"), unsafe_allow_html=True)
+        st.progress(completion_rate / 100)
 
-    st.markdown("<hr style='border:1px solid #2A2F3A; margin-top:25px; margin-bottom:25px'>", unsafe_allow_html=True)
+    # ─── ПРАВА КОЛОНКА — KPI
+    with col_right:
 
-    # ─── РОЗПОДІЛ ВИКОНАНИХ / НЕ ВИКОНАНИХ ─────────────
-    st.subheader("Розподіл виконання задач")
+        def metric_card(title, value):
+            return f"""
+            <div style='
+                background: linear-gradient(135deg, #1E1E2F, #25283D);
+                padding:22px;
+                border-radius:14px;
+                border:1px solid #2A2F3A;
+                box-shadow:0 6px 20px rgba(0,0,0,0.5);
+                margin-bottom:18px;
+                text-align:center;
+            '>
+                <div style='color:#9BA3AF; font-size:14px; margin-bottom:6px'>
+                    {title}
+                </div>
+                <div style='color:#FFFFFF; font-size:26px; font-weight:600'>
+                    {value}
+                </div>
+            </div>
+            """
+
+        st.markdown(metric_card("📌 Всього задач", total_tasks), unsafe_allow_html=True)
+        st.markdown(metric_card("✅ Виконано", total_completed), unsafe_allow_html=True)
+        st.markdown(metric_card("🔥 Серія", f"{data['streak']['count']} днів"), unsafe_allow_html=True)
+
+    st.markdown("<hr style='margin:30px 0'>", unsafe_allow_html=True)
+
+    # ─────────────────────────────────────────────
+    # ДВА ГРАФІКИ В РЯДОК
+    # ─────────────────────────────────────────────
+    colA, colB = st.columns(2)
+
     status_data = {
         "Статус": ["Виконано", "Не виконано"],
         "Кількість": [total_completed, total_tasks - total_completed]
@@ -690,20 +781,24 @@ elif page == "📊 Аналітика":
         status_data,
         names="Статус",
         values="Кількість",
-        color_discrete_map={"Виконано":"#3AA76D", "Не виконано":"#E57373"},
-        hole=0.5
+        hole=0.65,
+        color_discrete_map={
+            "Виконано":"#3AA76D",
+            "Не виконано":"#E57373"
+        }
     )
+
     fig_status.update_layout(
         template="plotly_dark",
-        font_color="#FFFFFF",
-        title_font_size=18,
-        legend=dict(orientation="h", y=-0.2)
+        showlegend=True,
+        margin=dict(t=20, b=20, l=20, r=20),
+        height=350
     )
-    st.plotly_chart(fig_status, use_container_width=True)
-    st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
-    # ─── СТРУКТУРА ЗАДАЧ ─────────────────────────────
-    st.subheader("Структура задач")
+    with colA:
+        st.subheader("Виконання")
+        st.plotly_chart(fig_status, use_container_width=True)
+
     type_data = {
         "Тип": ["Домашні завдання", "Навчальні цілі"],
         "Кількість": [total_hw, total_goals]
@@ -715,23 +810,30 @@ elif page == "📊 Аналітика":
         y="Кількість",
         text="Кількість",
         color="Тип",
-        color_discrete_map={"Домашні завдання":"#8AB4F8", "Навчальні цілі":"#FBC02D"}
+        color_discrete_map={
+            "Домашні завдання":"#8AB4F8",
+            "Навчальні цілі":"#FBC02D"
+        }
     )
-    fig_type.update_traces(marker_line_color='#1C1F26', marker_line_width=1.5)
+
     fig_type.update_layout(
         template="plotly_dark",
-        plot_bgcolor="#0E1117",
-        paper_bgcolor="#0E1117",
-        font_color="#FFFFFF",
-        title_font_size=18,
         showlegend=False,
-        yaxis=dict(showgrid=False)
+        height=350,
+        margin=dict(t=20, b=20, l=20, r=20)
     )
-    st.plotly_chart(fig_type, use_container_width=True)
-    st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
-    # ─── АКТИВНІСТЬ ЗА 30 ДНІВ ─────────────────────────────
-    st.subheader("Активність за останні 30 днів")
+    with colB:
+        st.subheader("Структура задач")
+        st.plotly_chart(fig_type, use_container_width=True)
+
+    st.markdown("<hr style='margin:30px 0'>", unsafe_allow_html=True)
+
+    # ─────────────────────────────────────────────
+    # АКТИВНІСТЬ 30 ДНІВ
+    # ─────────────────────────────────────────────
+    st.subheader("📅 Активність за 30 днів")
+
     done_dates = data["streak"].get("done_dates", [])
     today = date.today()
     days_30 = [(today - timedelta(days=i)) for i in range(29, -1, -1)]
@@ -747,48 +849,36 @@ elif page == "📊 Аналітика":
         activity,
         x="Дата",
         y="Активність",
-        text="Активність",
         color="Активність",
-        color_discrete_map={1:"#3AA76D", 0:"#E57373"}
+        color_discrete_map={1:"#3AA76D", 0:"#2A2F3A"}
     )
-    fig_activity.update_traces(marker_line_color='#0E1117', marker_line_width=1)
+
     fig_activity.update_layout(
         template="plotly_dark",
-        plot_bgcolor="#0E1117",
-        paper_bgcolor="#0E1117",
-        font_color="#FFFFFF",
-        title_font_size=18,
-        yaxis=dict(showticklabels=False, showgrid=False)
+        height=300,
+        yaxis=dict(showticklabels=False),
+        margin=dict(t=20, b=20, l=20, r=20)
     )
+
     st.plotly_chart(fig_activity, use_container_width=True)
-    st.markdown("<div style='height:25px'></div>", unsafe_allow_html=True)
 
-    # ─── ВАЖЛИВА ІНФОРМАЦІЯ ВНИЗУ ─────────────
-    st.markdown("""
-        <div style='
-            background: linear-gradient(135deg, #2C3E50, #34495E);  /* приглушений градієнт */
-            color:#FFFFFF;
-            padding:18px;
-            border-radius:12px;
-            font-weight:bold;
-            text-align:center;
-            box-shadow:0 4px 12px rgba(0,0,0,0.5);
-            margin-top:25px;
-            font-size:16px;
-        '>
-            Під час канікул 🔥 серія не переривається. 
-            Система автоматично не враховує ці дні як навчальні.
-        </div>
-    """, unsafe_allow_html=True)
-
+    st.markdown("<div style='height:30px'></div>", unsafe_allow_html=True)
 
 # ════════════════════════════════════════════════════════════
 # 🏖️ КАНІКУЛИ (темна тема)
 # ════════════════════════════════════════════════════════════
 elif page == "🏖️ Канікули":
 
-    st.markdown("<h1 style='color:#FFFFFF;'>🏖️ Канікули та перерви</h1>", unsafe_allow_html=True)
-    st.markdown("<hr style='border:1px solid #2A2F3A; margin-top:10px; margin-bottom:25px'>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#FFFFFF;'>🏖️ Канікули</h1>", unsafe_allow_html=True)
+    st.markdown("""
+    <hr style="
+        border: none;
+        height: 1px;
+        background: linear-gradient(to right, transparent, #2A2F3A, transparent);
+        margin-top: 10px;
+        margin-bottom: 30px;
+    ">
+    """, unsafe_allow_html=True)
 
     # ─── ДВОКОЛОНКОВИЙ МАКЕТ ─────────────────────────────
     col_left, col_right = st.columns([1, 2], gap="large")
@@ -886,21 +976,3 @@ elif page == "🏖️ Канікули":
         with col_s2:
             st.metric("📅 Всього днів канікул", total_days)
 
-        # ─── ВАЖЛИВА ІНФОРМАЦІЯ ВНИЗУ (приглушений градієнт) ───────────────
-        st.markdown("<div style='height:32px'></div>", unsafe_allow_html=True)  # відступ зверху
-        st.markdown("""
-            <div style='
-                background: linear-gradient(135deg, #2C3E50, #34495E);  /* темно-синьо-сірий градієнт */
-                color:#FFFFFF;
-                padding:18px;
-                border-radius:12px;
-                font-weight:bold;
-                text-align:center;
-                box-shadow:0 4px 12px rgba(0,0,0,0.5);
-                margin-top:25px;
-                font-size:16px;
-            '>
-                Під час канікул 🔥 серія не переривається. 
-                Система автоматично не враховує ці дні як навчальні!
-            </div>
-        """, unsafe_allow_html=True)
