@@ -480,9 +480,6 @@ if page == "🏠 Головна":
             st.info("Канікули не заплановані")
 
 
-# ════════════════════════════════════════════════════════════
-# 📅 ПЛАН
-# ════════════════════════════════════════════════════════════
 
 # ════════════════════════════════════════════════════════════
 # 📅 ПЛАН
@@ -491,7 +488,16 @@ if page == "🏠 Головна":
 if page == "📅 План":
 
     st.markdown("<h1 style='color:#FFFFFF;'>📅 Навчальний план</h1>", unsafe_allow_html=True)
-    st.markdown("<hr style='border:1px solid #2A2F3A; margin-top:10px; margin-bottom:25px'>", unsafe_allow_html=True)
+
+    st.markdown("""
+    <hr style="
+        border: none;
+        height: 1px;
+        background: linear-gradient(to right, transparent, #2A2F3A, transparent);
+        margin-top: 10px;
+        margin-bottom: 30px;
+    ">
+    """, unsafe_allow_html=True)
 
     # ─── ДВОКОЛОНКОВИЙ МАКЕТ ─────────────────────────────
     col_left, col_right = st.columns([1, 2], gap="large")
